@@ -2,9 +2,6 @@ import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -56,6 +53,11 @@ export const authConfig: NextAuthConfig = {
 
         const { email, password } = parsed.data;
 
+        // Lazy import to avoid postgres.js initializing at module load time
+        const { db } = await import("@/db");
+        const { users } = await import("@/db/schema");
+        const { eq } = await import("drizzle-orm");
+
         const [user] = await db
           .select()
           .from(users)
@@ -78,8 +80,6 @@ export const authConfig: NextAuthConfig = {
       },
     }),
   ],
-  // httpOnly cookies are set by default in NextAuth v5
   session: { strategy: "jwt" },
-  // Required for Vercel deployments — trusts the host header instead of NEXTAUTH_URL
   trustHost: true,
 };
