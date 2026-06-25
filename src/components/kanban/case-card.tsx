@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { cn, formatPhone, getWhatsAppUrl } from "@/lib/utils";
 import type { CaseWithAssignee } from "@/types";
-import { Phone, Mail, MessageCircle, FileText } from "lucide-react";
+import { Phone, Mail, MessageCircle, FileText, StickyNote } from "lucide-react";
 
 interface CaseCardProps {
   caseData: CaseWithAssignee;
@@ -13,6 +13,7 @@ interface CaseCardProps {
 export function CaseCard({ caseData }: CaseCardProps) {
   const router = useRouter();
   const whatsappUrl = getWhatsAppUrl(caseData.clientPhone);
+  const hasNotes = !!caseData.notes;
 
   return (
     <div
@@ -27,11 +28,21 @@ export function CaseCard({ caseData }: CaseCardProps) {
         "transition-all duration-150 cursor-pointer"
       )}
     >
-      {/* Client name + case type */}
+      {/* Client name + case type + notes indicator */}
       <div className="mb-2">
-        <h3 className="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors leading-tight">
-          {caseData.clientName}
-        </h3>
+        <div className="flex items-start justify-between gap-1.5">
+          <h3 className="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors leading-tight">
+            {caseData.clientName}
+          </h3>
+          {hasNotes && (
+            <span
+              title="Has notes"
+              className="flex-shrink-0 mt-0.5 text-[var(--color-text-muted)] hover:text-amber-500 transition-colors"
+            >
+              <StickyNote size={12} />
+            </span>
+          )}
+        </div>
         {caseData.caseType && (
           <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
             {caseData.caseType}

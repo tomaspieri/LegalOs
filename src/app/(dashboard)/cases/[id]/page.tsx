@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getCaseById, getTimelineByCase } from "@/lib/queries";
+import { getCaseById, getUnifiedTimeline, getTimelineByCase } from "@/lib/queries";
 import { mockCases, mockTimelineEvents } from "@/lib/mock-data";
 import { StageBadge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
-import { TimelineItem } from "@/components/cases/timeline-item";
+import { TimelineClient } from "@/components/cases/timeline-client";
+import { InternalNotes } from "@/components/cases/internal-notes";
 import { formatPhone, getWhatsAppUrl, formatDate } from "@/lib/utils";
 import { auth } from "@/lib/auth";
+import type { UnifiedTimelineItem } from "@/types";
 import {
   ArrowLeft,
   Phone,
@@ -24,19 +26,28 @@ export default async function CasePage({
   const lawFirmId = (session?.user as any)?.lawFirmId as string | undefined;
 
   let caseData;
-  let timeline;
+  let timeline: UnifiedTimelineItem[] = [];
+  let notesEvents: Awaited<ReturnType<typeof getTimelineByCase>> = [];
 
   if (lawFirmId) {
     caseData = await getCaseById(id);
     if (!caseData) notFound();
-    timeline = await getTimelineByCase(id);
+
+    // Parallel fetch timeline and notes
+    const [unified, allEvents] = await Promise.all([
+      getUnifiedTimeline(id).catch(() => []),
+      getTimelineByCase(id).catch(() => []),
+    ]);
+    timeline = unified;
+    notesEvents = allEvents.filter((e) => e.type === "note");
   } else if (process.env.NODE_ENV === "development") {
     caseData = mockCases.find((c) => c.id === id);
     if (!caseData) notFound();
-    timeline = (mockTimelineEvents[id] ?? []).sort(
-      (a, b) =>
-        new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()
+    const evts = (mockTimelineEvents[id] ?? []).sort(
+      (a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()
     );
+    notesEvents = evts.filter((e) => e.type === "note");
+    timeline = evts.map((e) => ({ kind: "event" as const, occurredAt: e.occurredAt, data: e }));
   } else {
     notFound();
   }
@@ -76,7 +87,6 @@ export default async function CasePage({
             )}
           </div>
 
-          {/* Assigned */}
           {caseData.assignedTo && (
             <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
               <Avatar
@@ -141,11 +151,11 @@ export default async function CasePage({
           )}
         </div>
 
-        {/* Notes */}
+        {/* Case notes (high-level summary) */}
         {caseData.notes && (
           <div className="mt-4 p-3 bg-[var(--color-surface-2)] rounded-[var(--radius-md)]">
             <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-1.5">
-              Notes
+              Case Summary
             </p>
             <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
               {caseData.notes}
@@ -158,23 +168,17 @@ export default async function CasePage({
         </p>
       </div>
 
-      {/* Timeline */}
-      <div>
-        <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-4">
-          Timeline
-        </h2>
+      {/* Internal Notes — editable, separate from timeline */}
+      <div className="mb-8">
+        <InternalNotes caseId={id} notes={notesEvents} />
+      </div>
 
-        {timeline.length === 0 ? (
-          <div className="text-center py-12 text-[var(--color-text-muted)] text-sm">
-            No activity yet. Calls, messages, and notes will appear here.
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {timeline.map((event) => (
-              <TimelineItem key={event.id} event={event} />
-            ))}
-          </div>
-        )}
+      {/* Timeline with tabs */}
+      <div>
+        <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
+          Activity
+        </h2>
+        <TimelineClient items={timeline} />
       </div>
     </div>
   );

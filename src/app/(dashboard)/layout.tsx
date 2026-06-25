@@ -3,11 +3,6 @@ import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 
-// Preview user for development — REMOVE before production
-const DEV_PREVIEW_USER = process.env.NODE_ENV === "development"
-  ? { name: "Robert Hayes", email: "robert@hayeslawfirm.com", role: "admin", avatarUrl: null }
-  : null;
-
 export default async function DashboardLayout({
   children,
 }: {
@@ -15,16 +10,14 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
 
-  const user = session?.user
-    ? {
-        name: session.user.name ?? "User",
-        email: session.user.email ?? "",
-        role: (session.user as any).role ?? "member",
-        avatarUrl: session.user.image ?? null,
-      }
-    : DEV_PREVIEW_USER;
+  if (!session?.user) redirect("/login");
 
-  if (!user) redirect("/login");
+  const user = {
+    name: session.user.name ?? "User",
+    email: session.user.email ?? "",
+    role: (session.user as any).role ?? "member",
+    avatarUrl: session.user.image ?? null,
+  };
 
   return (
     // Use dvh (dynamic viewport height) to handle iOS address bar correctly

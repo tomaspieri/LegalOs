@@ -1,4 +1,5 @@
 import { KanbanColumn } from "@/components/kanban/kanban-column";
+import { MobileBoardView } from "@/components/kanban/mobile-board-view";
 import { PIPELINE_STAGES } from "@/types";
 import type { PipelineStage, CaseWithAssignee } from "@/types";
 import { Search } from "lucide-react";
@@ -52,9 +53,9 @@ export default async function BoardPage() {
         </div>
       </div>
 
-      {/* Kanban board — scrolls horizontally, touch-friendly */}
+      {/* Desktop: Kanban board — scrolls horizontally */}
       <div
-        className="flex-1 overflow-x-auto overscroll-x-contain"
+        className="hidden sm:block flex-1 overflow-x-auto overscroll-x-contain"
         style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
       >
         <div className="flex gap-3 sm:gap-4 p-4 sm:p-6 items-start"
@@ -68,6 +69,11 @@ export default async function BoardPage() {
             />
           ))}
         </div>
+      </div>
+
+      {/* Mobile: vertical list with stage filter pills */}
+      <div className="sm:hidden flex-1">
+        <MobileBoardView cases={allCases} />
       </div>
     </div>
   );

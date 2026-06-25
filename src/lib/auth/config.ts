@@ -53,29 +53,28 @@ export const authConfig: NextAuthConfig = {
 
         const { email, password } = parsed.data;
 
-        // Lazy import to avoid postgres.js initializing at module load time
-        const { db } = await import("@/db");
-        const { users } = await import("@/db/schema");
-        const { eq } = await import("drizzle-orm");
+        const { getSupabaseAdmin } = await import("@/lib/supabase-server");
+        const supabase = getSupabaseAdmin();
 
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, email.toLowerCase().trim()))
+        const { data: users } = await (supabase as any)
+          .from("users")
+          .select("id, name, email, avatar_url, role, law_firm_id, password_hash")
+          .eq("email", email.toLowerCase().trim())
           .limit(1);
 
-        if (!user || !user.passwordHash) return null;
+        const user = users?.[0] as any;
+        if (!user || !user.password_hash) return null;
 
-        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+        const passwordMatch = await bcrypt.compare(password, user.password_hash);
         if (!passwordMatch) return null;
 
         return {
           id: user.id,
           name: user.name,
           email: user.email,
-          image: user.avatarUrl,
+          image: user.avatar_url,
           role: user.role,
-          lawFirmId: user.lawFirmId,
+          lawFirmId: user.law_firm_id,
         };
       },
     }),

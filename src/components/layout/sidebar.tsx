@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import {
   LayoutGrid,
-  Inbox,
+  Phone,
   Settings,
   Scale,
   LogOut,
@@ -20,7 +20,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: "/board", label: "Pipeline", icon: LayoutGrid },
-  { href: "/inbox", label: "Inbox", icon: Inbox },
+  { href: "/communications", label: "Communications", icon: Phone },
 ];
 
 const bottomItems: NavItem[] = [

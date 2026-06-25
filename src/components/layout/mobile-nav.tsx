@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, Inbox, Settings } from "lucide-react";
+import { LayoutGrid, Phone, Settings } from "lucide-react";
 
 const navItems = [
   { href: "/board", label: "Pipeline", icon: LayoutGrid },
-  { href: "/inbox", label: "Inbox", icon: Inbox },
+  { href: "/communications", label: "Comms", icon: Phone },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
