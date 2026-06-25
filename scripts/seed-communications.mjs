@@ -144,7 +144,7 @@ const calls = [
 const messages = [
   // Maria Johnson
   {
-    id: "ms000001-0000-0000-0000-000000000001",
+    id: "aa000001-0000-0000-0000-000000000001",
     case_id: CASES[0].id,
     firm_id: FIRM_ID,
     direction: "outbound",
@@ -153,7 +153,7 @@ const messages = [
     external_id: "ext-sms-001",
   },
   {
-    id: "ms000001-0000-0000-0000-000000000002",
+    id: "aa000001-0000-0000-0000-000000000002",
     case_id: CASES[0].id,
     firm_id: FIRM_ID,
     direction: "inbound",
@@ -162,7 +162,7 @@ const messages = [
     external_id: "ext-sms-002",
   },
   {
-    id: "ms000001-0000-0000-0000-000000000003",
+    id: "aa000001-0000-0000-0000-000000000003",
     case_id: CASES[0].id,
     firm_id: FIRM_ID,
     direction: "outbound",
@@ -172,7 +172,7 @@ const messages = [
   },
   // David Chen
   {
-    id: "ms000001-0000-0000-0000-000000000004",
+    id: "aa000001-0000-0000-0000-000000000004",
     case_id: CASES[1].id,
     firm_id: FIRM_ID,
     direction: "outbound",
@@ -181,7 +181,7 @@ const messages = [
     external_id: "ext-sms-004",
   },
   {
-    id: "ms000001-0000-0000-0000-000000000005",
+    id: "aa000001-0000-0000-0000-000000000005",
     case_id: CASES[1].id,
     firm_id: FIRM_ID,
     direction: "inbound",
@@ -190,7 +190,7 @@ const messages = [
     external_id: "ext-sms-005",
   },
   {
-    id: "ms000001-0000-0000-0000-000000000006",
+    id: "aa000001-0000-0000-0000-000000000006",
     case_id: CASES[1].id,
     firm_id: FIRM_ID,
     direction: "outbound",
@@ -200,7 +200,7 @@ const messages = [
   },
   // Sandra Williams
   {
-    id: "ms000001-0000-0000-0000-000000000007",
+    id: "aa000001-0000-0000-0000-000000000007",
     case_id: CASES[2].id,
     firm_id: FIRM_ID,
     direction: "outbound",
@@ -209,7 +209,7 @@ const messages = [
     external_id: "ext-sms-007",
   },
   {
-    id: "ms000001-0000-0000-0000-000000000008",
+    id: "aa000001-0000-0000-0000-000000000008",
     case_id: CASES[2].id,
     firm_id: FIRM_ID,
     direction: "inbound",
@@ -219,7 +219,7 @@ const messages = [
   },
   // Michael Torres
   {
-    id: "ms000001-0000-0000-0000-000000000009",
+    id: "aa000001-0000-0000-0000-000000000009",
     case_id: CASES[3].id,
     firm_id: FIRM_ID,
     direction: "outbound",
@@ -228,7 +228,7 @@ const messages = [
     external_id: "ext-sms-009",
   },
   {
-    id: "ms000001-0000-0000-0000-000000000010",
+    id: "aa000001-0000-0000-0000-000000000010",
     case_id: CASES[3].id,
     firm_id: FIRM_ID,
     direction: "inbound",
@@ -238,7 +238,7 @@ const messages = [
   },
   // Patricia Davis
   {
-    id: "ms000001-0000-0000-0000-000000000011",
+    id: "aa000001-0000-0000-0000-000000000011",
     case_id: CASES[4].id,
     firm_id: FIRM_ID,
     direction: "outbound",
@@ -247,7 +247,7 @@ const messages = [
     external_id: "ext-sms-011",
   },
   {
-    id: "ms000001-0000-0000-0000-000000000012",
+    id: "aa000001-0000-0000-0000-000000000012",
     case_id: CASES[4].id,
     firm_id: FIRM_ID,
     direction: "inbound",
@@ -260,49 +260,49 @@ const messages = [
 // AI summaries for completed calls with transcripts
 const callSummaries = [
   {
-    id: "cs000001-0000-0000-0000-000000000001",
+    id: "bb000001-0000-0000-0000-000000000001",
     call_id: "ca000001-0000-0000-0000-000000000001",
     firm_id: FIRM_ID,
     summary_text: "Client called to check on settlement status. State Farm's initial offer of $12,000 was rejected; attorney countered at $85,000 citing $45,000 in medical specials. Client asking about timeline — attorney expects 2-4 week response. Case in strong position due to clear liability and documented injuries.",
     generated_at: daysAgo(3, 1),
   },
   {
-    id: "cs000001-0000-0000-0000-000000000002",
+    id: "bb000001-0000-0000-0000-000000000002",
     call_id: "ca000001-0000-0000-0000-000000000002",
     firm_id: FIRM_ID,
     summary_text: "Outbound call to confirm receipt of medical records from Miami Orthopedic Center. Attorney advised client to continue physical therapy for at least one more month before finalizing the demand. Client confirmed compliance.",
     generated_at: daysAgo(8, 3),
   },
   {
-    id: "cs000001-0000-0000-0000-000000000003",
+    id: "bb000001-0000-0000-0000-000000000003",
     call_id: "ca000001-0000-0000-0000-000000000004",
     firm_id: FIRM_ID,
     summary_text: "Client called regarding employment retaliation case. Termination occurred two weeks after FMLA return — classic suspicious timing. Client has strong evidence: emails and a text from manager expressing hostility toward the absence. Attorney confirmed this documentary evidence supports a retaliation claim under FMLA/Title VII.",
     generated_at: daysAgo(2),
   },
   {
-    id: "cs000001-0000-0000-0000-000000000004",
+    id: "bb000001-0000-0000-0000-000000000004",
     call_id: "ca000001-0000-0000-0000-000000000006",
     firm_id: FIRM_ID,
     summary_text: "Client reported that Publix placed the wet floor sign after her fall, not before — a key fact dispute. She identified a male eyewitness who assisted her and spoke with the store manager. Attorney to follow up on identifying and contacting the witness. Publix's incident report contradicts client's account.",
     generated_at: daysAgo(1, 2),
   },
   {
-    id: "cs000001-0000-0000-0000-000000000005",
+    id: "bb000001-0000-0000-0000-000000000005",
     call_id: "ca000001-0000-0000-0000-000000000007",
     firm_id: FIRM_ID,
     summary_text: "Update call on habitability case. Downtown Apartments has retained defense counsel, signaling they are taking the claim seriously. Negotiation phase beginning; attorney expects to obtain lease termination without penalty plus reimbursement for temporary lodging expenses. Mold issue ongoing — client purchased air purifiers as mitigation.",
     generated_at: daysAgo(4, 5),
   },
   {
-    id: "cs000001-0000-0000-0000-000000000006",
+    id: "bb000001-0000-0000-0000-000000000006",
     call_id: "ca000001-0000-0000-0000-000000000008",
     firm_id: FIRM_ID,
     summary_text: "Expert Dr. Hernandez has confirmed the retained surgical sponge was visible on post-operative imaging prior to discharge. Strong negligence case — hospital may argue oversight but expert will testify that standard post-op film review should have detected it. Attorney projecting seven-figure demand based on additional surgeries, lost wages, and pain and suffering.",
     generated_at: daysAgo(6, 1),
   },
   {
-    id: "cs000001-0000-0000-0000-000000000007",
+    id: "bb000001-0000-0000-0000-000000000007",
     call_id: "ca000001-0000-0000-0000-000000000009",
     firm_id: FIRM_ID,
     summary_text: "Hospital's insurer made initial contact through defense counsel — positive signal that they are concerned about liability. Attorney cautioned against premature settlement discussion. Case strategy meeting to be scheduled before any formal response is sent.",
