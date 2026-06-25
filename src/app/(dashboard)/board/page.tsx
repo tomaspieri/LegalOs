@@ -1,21 +1,32 @@
 import { KanbanColumn } from "@/components/kanban/kanban-column";
-import { mockCases } from "@/lib/mock-data";
 import { PIPELINE_STAGES } from "@/types";
-import type { PipelineStage } from "@/types";
+import type { PipelineStage, CaseWithAssignee } from "@/types";
 import { Search } from "lucide-react";
+import { auth } from "@/lib/auth";
+import { getCasesByLawFirm } from "@/lib/queries";
+import { mockCases } from "@/lib/mock-data";
 
-export default function BoardPage() {
+export default async function BoardPage() {
+  let allCases: CaseWithAssignee[] = [];
+
+  const session = await auth();
+  const lawFirmId = (session?.user as any)?.lawFirmId as string | undefined;
+
+  if (lawFirmId) {
+    allCases = await getCasesByLawFirm(lawFirmId);
+  } else if (process.env.NODE_ENV === "development") {
+    allCases = mockCases;
+  }
+
   const casesByStage = PIPELINE_STAGES.reduce(
     (acc, stage) => {
-      acc[stage.id] = mockCases.filter(
-        (c) => c.pipelineStage === stage.id
-      );
+      acc[stage.id] = allCases.filter((c) => c.pipelineStage === stage.id);
       return acc;
     },
-    {} as Record<PipelineStage, typeof mockCases>
+    {} as Record<PipelineStage, CaseWithAssignee[]>
   );
 
-  const totalCases = mockCases.length;
+  const totalCases = allCases.length;
 
   return (
     <div className="flex flex-col min-h-full">

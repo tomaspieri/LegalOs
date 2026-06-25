@@ -1,16 +1,17 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getCaseById, getTimelineByCase } from "@/lib/queries";
 import { mockCases, mockTimelineEvents } from "@/lib/mock-data";
 import { StageBadge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { TimelineItem } from "@/components/cases/timeline-item";
 import { formatPhone, getWhatsAppUrl, formatDate } from "@/lib/utils";
+import { auth } from "@/lib/auth";
 import {
   ArrowLeft,
   Phone,
   Mail,
   MessageCircle,
-  User,
 } from "lucide-react";
 
 export default async function CasePage({
@@ -19,14 +20,26 @@ export default async function CasePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const caseData = mockCases.find((c) => c.id === id);
+  const session = await auth();
+  const lawFirmId = (session?.user as any)?.lawFirmId as string | undefined;
 
-  if (!caseData) notFound();
+  let caseData;
+  let timeline;
 
-  const timeline = (mockTimelineEvents[id] ?? []).sort(
-    (a, b) =>
-      new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()
-  );
+  if (lawFirmId) {
+    caseData = await getCaseById(id);
+    if (!caseData) notFound();
+    timeline = await getTimelineByCase(id);
+  } else if (process.env.NODE_ENV === "development") {
+    caseData = mockCases.find((c) => c.id === id);
+    if (!caseData) notFound();
+    timeline = (mockTimelineEvents[id] ?? []).sort(
+      (a, b) =>
+        new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()
+    );
+  } else {
+    notFound();
+  }
 
   const whatsappUrl = getWhatsAppUrl(caseData.clientPhone);
 
