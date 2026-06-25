@@ -80,4 +80,6 @@ export const authConfig: NextAuthConfig = {
   ],
   // httpOnly cookies are set by default in NextAuth v5
   session: { strategy: "jwt" },
+  // Required for Vercel deployments — trusts the host header instead of NEXTAUTH_URL
+  trustHost: true,
 };
