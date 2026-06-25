@@ -15,7 +15,8 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-sidebar-bg)] border-t border-white/5 flex md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-sidebar-bg)] border-t border-white/5 flex md:hidden"
+         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive =

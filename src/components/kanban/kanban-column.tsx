@@ -18,7 +18,7 @@ interface KanbanColumnProps {
 
 export function KanbanColumn({ stageId, label, cases }: KanbanColumnProps) {
   return (
-    <div className="flex flex-col min-w-[280px] w-[280px] flex-shrink-0">
+    <div className="flex flex-col flex-shrink-0" style={{ width: "clamp(260px, 75vw, 300px)" }}>
       {/* Column header */}
       <div className="flex items-center gap-2 mb-3 px-1">
         <span className={`w-2 h-2 rounded-full flex-shrink-0 ${stageColors[stageId]}`} />

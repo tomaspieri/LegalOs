@@ -27,18 +27,22 @@ export default async function DashboardLayout({
   if (!user) redirect("/login");
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--color-bg)]">
-      {/* Desktop sidebar */}
-      <div className="hidden md:flex">
+    // Use dvh (dynamic viewport height) to handle iOS address bar correctly
+    <div className="flex h-[100dvh] bg-[var(--color-bg)]">
+      {/* Desktop sidebar — hidden on mobile */}
+      <div className="hidden md:flex flex-shrink-0">
         <Sidebar user={user} />
       </div>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto pb-16 md:pb-0">
+      {/* Main content — scrolls independently, padded for mobile nav + safe area */}
+      <main
+        className="flex-1 min-w-0 overflow-y-auto md:pb-0"
+        style={{ paddingBottom: "calc(4rem + env(safe-area-inset-bottom, 0px))" }}
+      >
         {children}
       </main>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav — fixed, hidden on desktop */}
       <MobileNav />
     </div>
   );
