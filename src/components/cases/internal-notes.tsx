@@ -85,15 +85,24 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
   }
 
   return (
-    <div style={{ background: "#FFFDF0", border: "1px solid #EDD770", borderRadius: 10, padding: "18px 22px" }}>
-      <div className="flex items-center justify-between mb-4">
+    <div
+      style={{
+        background: "#F7F9FC",
+        border: "1px solid #DDE4EF",
+        borderLeft: "3px solid #1D4ED8",
+        borderRadius: 10,
+        padding: "16px 20px",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <h2
           style={{
             fontSize: 10,
             fontWeight: 700,
-            color: "#856404",
+            color: "#5A6A80",
             letterSpacing: "0.1em",
             textTransform: "uppercase",
+            margin: 0,
           }}
         >
           Internal Notes
@@ -108,7 +117,7 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
             background: "#1D4ED8",
             color: "white",
             borderRadius: 6,
-            padding: "5px 12px",
+            padding: "4px 10px",
             fontSize: 12,
             fontWeight: 500,
             cursor: "pointer",
@@ -122,7 +131,7 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
 
       {/* Add note form */}
       {addingNew && (
-        <div className="mb-3 p-3" style={{ background: "white", border: "1px solid #EDD770", borderRadius: 7 }}>
+        <div style={{ marginBottom: 10, padding: "10px 12px", background: "white", border: "1px solid #DDE4EF", borderRadius: 7 }}>
           <textarea
             ref={textareaRef}
             value={newContent}
@@ -131,15 +140,25 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
               if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) submitAdd();
               if (e.key === "Escape") cancelAdd();
             }}
-            placeholder="Write a note... (Ctrl+Enter to save)"
-            rows={3}
-            className="w-full text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] bg-transparent resize-none outline-none leading-relaxed"
+            placeholder="Write a note… (Ctrl+Enter to save)"
+            rows={2}
+            style={{
+              width: "100%",
+              fontSize: 13,
+              color: "#0C1628",
+              background: "transparent",
+              resize: "none",
+              outline: "none",
+              lineHeight: 1.55,
+              fontFamily: "inherit",
+              border: "none",
+            }}
           />
-          <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-[var(--color-border)]">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #EEF1F8" }}>
             <button
               type="button"
               onClick={cancelAdd}
-              className="inline-flex items-center gap-1 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors cursor-pointer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#9AAAB8", background: "none", border: "none", cursor: "pointer", padding: "3px 6px" }}
             >
               <X size={12} />
               Cancel
@@ -148,7 +167,20 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
               type="button"
               onClick={submitAdd}
               disabled={!newContent.trim()}
-              className="inline-flex items-center gap-1 text-xs font-medium text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed px-2.5 py-1 rounded-[var(--radius-sm)] transition-colors cursor-pointer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                fontSize: 12,
+                fontWeight: 500,
+                color: "white",
+                background: "#1D4ED8",
+                border: "none",
+                borderRadius: 5,
+                padding: "4px 10px",
+                cursor: newContent.trim() ? "pointer" : "not-allowed",
+                opacity: newContent.trim() ? 1 : 0.5,
+              }}
             >
               <Check size={12} />
               Save
@@ -159,24 +191,22 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
 
       {/* Notes list */}
       {notes.length === 0 && !addingNew ? (
-        <div className="text-center py-6" style={{ border: "1px dashed #EDD770", borderRadius: 7 }}>
-          <p className="text-sm" style={{ color: "#9AAAB8" }}>No internal notes yet.</p>
+        <div style={{ textAlign: "center", padding: "16px 0", border: "1px dashed #C5D2E8", borderRadius: 7 }}>
+          <p style={{ fontSize: 12, color: "#9AAAB8", margin: "0 0 6px" }}>No internal notes yet.</p>
           <button
             type="button"
             onClick={openAdd}
-            className="mt-2 text-xs hover:underline cursor-pointer"
-            style={{ color: "#1D4ED8" }}
+            style={{ fontSize: 12, color: "#1D4ED8", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
           >
             Add the first note
           </button>
         </div>
       ) : (
-        <div className="flex flex-col" style={{ gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {notes.map((note) => (
             <div
               key={note.id}
-              className="p-3"
-              style={{ background: "white", border: "1px solid #EDD770", borderRadius: 7, padding: "13px 15px" }}
+              style={{ background: "white", border: "1px solid #E5EAF4", borderRadius: 7, padding: "12px 14px" }}
             >
               {editingId === note.id ? (
                 <>
@@ -188,14 +218,24 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
                       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) submitEdit();
                       if (e.key === "Escape") cancelEdit();
                     }}
-                    rows={3}
-                    className="w-full text-sm text-[var(--color-text-primary)] bg-transparent resize-none outline-none leading-relaxed"
+                    rows={2}
+                    style={{
+                      width: "100%",
+                      fontSize: 13,
+                      color: "#0C1628",
+                      background: "transparent",
+                      resize: "none",
+                      outline: "none",
+                      lineHeight: 1.55,
+                      fontFamily: "inherit",
+                      border: "none",
+                    }}
                   />
-                  <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-[var(--color-border)]">
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #EEF1F8" }}>
                     <button
                       type="button"
                       onClick={cancelEdit}
-                      className="inline-flex items-center gap-1 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors cursor-pointer"
+                      style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#9AAAB8", background: "none", border: "none", cursor: "pointer", padding: "3px 6px" }}
                     >
                       <X size={12} />
                       Cancel
@@ -204,7 +244,20 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
                       type="button"
                       onClick={submitEdit}
                       disabled={!editContent.trim()}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed px-2.5 py-1 rounded-[var(--radius-sm)] transition-colors cursor-pointer"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        fontSize: 12,
+                        fontWeight: 500,
+                        color: "white",
+                        background: "#1D4ED8",
+                        border: "none",
+                        borderRadius: 5,
+                        padding: "4px 10px",
+                        cursor: editContent.trim() ? "pointer" : "not-allowed",
+                        opacity: editContent.trim() ? 1 : 0.5,
+                      }}
                     >
                       <Check size={12} />
                       Save
@@ -212,21 +265,23 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
                   </div>
                 </>
               ) : deletingId === note.id ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-[var(--color-danger)] font-medium">Delete this note?</p>
-                  <p className="text-xs text-[var(--color-text-muted)] line-clamp-2">{note.content}</p>
-                  <div className="flex items-center gap-2">
+                <div>
+                  <p style={{ fontSize: 13, color: "#DC2626", fontWeight: 500, margin: "0 0 4px" }}>Delete this note?</p>
+                  <p style={{ fontSize: 12, color: "#9AAAB8", margin: "0 0 10px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                    {note.content}
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <button
                       type="button"
                       onClick={() => setDeletingId(null)}
-                      className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors cursor-pointer"
+                      style={{ fontSize: 12, color: "#9AAAB8", background: "none", border: "none", cursor: "pointer" }}
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       onClick={() => confirmDelete(note.id)}
-                      className="text-xs font-medium text-white bg-[var(--color-danger)] hover:opacity-90 px-2.5 py-1 rounded-[var(--radius-sm)] transition-opacity cursor-pointer"
+                      style={{ fontSize: 12, fontWeight: 500, color: "white", background: "#DC2626", border: "none", borderRadius: 5, padding: "4px 10px", cursor: "pointer" }}
                     >
                       Delete
                     </button>
@@ -234,14 +289,11 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
                 </div>
               ) : (
                 <>
-                  <p
-                    className="whitespace-pre-wrap"
-                    style={{ fontSize: 13, color: "#0C1628", lineHeight: 1.6, marginBottom: 10 }}
-                  >
+                  <p style={{ fontSize: 13, color: "#0C1628", lineHeight: 1.6, margin: "0 0 10px", whiteSpace: "pre-wrap" }}>
                     {note.content}
                   </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center" style={{ gap: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       {note.author && (
                         <>
                           <span
@@ -261,29 +313,29 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
                           >
                             {getInitials(note.author.name)}
                           </span>
-                          <span style={{ fontSize: 12, color: "#5A6A80" }}>
-                            {note.author.name}
-                          </span>
+                          <span style={{ fontSize: 12, color: "#5A6A80" }}>{note.author.name}</span>
                         </>
                       )}
-                      <time style={{ fontSize: 11, color: "#9AAAB8" }}>
-                        {formatDateTime(note.occurredAt)}
-                      </time>
+                      <time style={{ fontSize: 11, color: "#9AAAB8" }}>{formatDateTime(note.occurredAt)}</time>
                     </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity [.border:hover_&]:opacity-100">
+                    <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <button
                         type="button"
                         onClick={() => openEdit(note)}
-                        className="p-1 rounded text-[var(--color-text-muted)] hover:text-[var(--color-accent)] hover:bg-[var(--color-accent-light)] transition-colors cursor-pointer"
                         title="Edit note"
+                        style={{ display: "flex", padding: 5, borderRadius: 4, color: "#9AAAB8", background: "none", border: "none", cursor: "pointer" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = "#1D4ED8"; e.currentTarget.style.background = "#EEF3FF"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = "#9AAAB8"; e.currentTarget.style.background = "none"; }}
                       >
                         <Pencil size={12} />
                       </button>
                       <button
                         type="button"
                         onClick={() => setDeletingId(note.id)}
-                        className="p-1 rounded text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-[var(--color-danger-light)] transition-colors cursor-pointer"
                         title="Delete note"
+                        style={{ display: "flex", padding: 5, borderRadius: 4, color: "#9AAAB8", background: "none", border: "none", cursor: "pointer" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = "#DC2626"; e.currentTarget.style.background = "#FFF5F5"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = "#9AAAB8"; e.currentTarget.style.background = "none"; }}
                       >
                         <Trash2 size={12} />
                       </button>

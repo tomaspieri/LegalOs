@@ -74,33 +74,33 @@ export default async function CasePage({
 
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 40px" }}>
         <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 14 }}>
-          {/* Header card */}
+
+          {/* Header — single cohesive block */}
           <div style={{ background: "white", border: "1px solid #DDE4EF", borderRadius: 10, padding: "22px 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 12, flexWrap: "wrap" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* Row 1: stage badge + case type + assigned attorney */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span
                   style={{
                     background: "#EEF3FF",
                     color: "#1D4ED8",
                     fontSize: 11,
                     fontWeight: 600,
-                    padding: "2px 6px",
+                    padding: "2px 8px",
                     borderRadius: 3,
                     border: "1px solid #C7D9FF",
                     textTransform: "capitalize",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {stageLabel}
                 </span>
                 {caseData.caseType && (
-                  <>
-                    <span style={{ color: "#DDE4EF" }}>·</span>
-                    <span style={{ fontSize: 13, color: "#5A6A80" }}>{caseData.caseType}</span>
-                  </>
+                  <span style={{ fontSize: 13, color: "#5A6A80" }}>{caseData.caseType}</span>
                 )}
               </div>
               {caseData.assignedTo && (
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ fontSize: 12, color: "#9AAAB8" }}>Assigned to</span>
                   <div
                     style={{
@@ -125,11 +125,21 @@ export default async function CasePage({
               )}
             </div>
 
-            <h1 style={{ fontSize: 24, fontWeight: 700, color: "#0C1628", letterSpacing: "-0.5px", marginBottom: 3 }}>
+            {/* Client name */}
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: "#0C1628", letterSpacing: "-0.5px", margin: "0 0 4px" }}>
               {caseData.clientName}
             </h1>
+
+            {/* Case title */}
             {caseData.caseTitle && (
-              <p style={{ fontSize: 13, color: "#7A8FA8", marginBottom: 16 }}>{caseData.caseTitle}</p>
+              <p style={{ fontSize: 13, color: "#7A8FA8", margin: "0 0 10px" }}>{caseData.caseTitle}</p>
+            )}
+
+            {/* Case summary — inline, no separate card */}
+            {caseData.notes && (
+              <p style={{ fontSize: 13, color: "#3A5068", lineHeight: 1.65, margin: "0 0 16px", paddingBottom: 16, borderBottom: "1px solid #EEF1F8" }}>
+                {caseData.notes}
+              </p>
             )}
 
             {/* Contact row */}
@@ -138,9 +148,8 @@ export default async function CasePage({
                 display: "flex",
                 alignItems: "center",
                 gap: 18,
-                paddingTop: 16,
-                borderTop: "1px solid #DDE4EF",
                 flexWrap: "wrap",
+                ...(caseData.notes ? {} : { paddingTop: 16, borderTop: "1px solid #DDE4EF" }),
               }}
             >
               {caseData.clientPhone && (
@@ -185,29 +194,10 @@ export default async function CasePage({
             </div>
           </div>
 
-          {/* Case Summary */}
-          {caseData.notes && (
-            <div style={{ background: "white", border: "1px solid #DDE4EF", borderRadius: 10, padding: "18px 22px" }}>
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#9AAAB8",
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  marginBottom: 8,
-                }}
-              >
-                Case Summary
-              </div>
-              <p style={{ fontSize: 13, color: "#3A5068", lineHeight: 1.65 }}>{caseData.notes}</p>
-            </div>
-          )}
-
-          {/* Internal Notes (amber wrapper from component) */}
+          {/* Internal Notes */}
           <InternalNotes caseId={id} notes={notesEvents} />
 
-          {/* Activity */}
+          {/* Activity — main section */}
           <div style={{ background: "white", border: "1px solid #DDE4EF", borderRadius: 10, marginBottom: 24, overflow: "hidden" }}>
             <TimelineClient items={timeline} />
           </div>

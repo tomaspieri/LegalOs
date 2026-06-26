@@ -231,6 +231,28 @@ export async function getUnifiedTimeline(caseId: string): Promise<UnifiedTimelin
   return items.sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime());
 }
 
+export async function getUnreadCommsCount(firmId: string): Promise<number> {
+  const supabase = getSupabaseAdmin();
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  const [{ count: callCount }, { count: msgCount }] = await Promise.all([
+    supabase
+      .from("calls")
+      .select("id", { count: "exact", head: true })
+      .eq("firm_id", firmId)
+      .is("read_at", null)
+      .gte("started_at", cutoff),
+    supabase
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("firm_id", firmId)
+      .is("read_at", null)
+      .gte("sent_at", cutoff),
+  ]);
+
+  return (callCount ?? 0) + (msgCount ?? 0);
+}
+
 export async function getCommunicationsByFirm(
   firmId: string,
   page = 1,

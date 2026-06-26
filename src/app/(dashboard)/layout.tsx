@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
-import { getCasesByLawFirm } from "@/lib/queries";
+import { getCasesByLawFirm, getUnreadCommsCount } from "@/lib/queries";
 
 export default async function DashboardLayout({
   children,
@@ -21,18 +21,23 @@ export default async function DashboardLayout({
   };
 
   const lawFirmId = (session.user as any).lawFirmId as string | undefined;
-  const recentCases = lawFirmId
-    ? (await getCasesByLawFirm(lawFirmId).catch(() => []))
-        .slice(0, 3)
-        .map((c) => ({ id: c.id, clientName: c.clientName, pipelineStage: c.pipelineStage }))
-    : [];
+  const [recentCases, unreadCount] = lawFirmId
+    ? await Promise.all([
+        getCasesByLawFirm(lawFirmId)
+          .then((cases) =>
+            cases.slice(0, 3).map((c) => ({ id: c.id, clientName: c.clientName, pipelineStage: c.pipelineStage }))
+          )
+          .catch(() => [] as { id: string; clientName: string; pipelineStage: string }[]),
+        getUnreadCommsCount(lawFirmId).catch(() => 0),
+      ])
+    : [[], 0];
 
   return (
     // Use dvh (dynamic viewport height) to handle iOS address bar correctly
     <div className="flex h-[100dvh] bg-[var(--color-bg)]">
       {/* Desktop sidebar — hidden on mobile */}
       <div className="hidden md:flex flex-shrink-0">
-        <Sidebar user={user} recentCases={recentCases} />
+        <Sidebar user={user} recentCases={recentCases} unreadCount={unreadCount as number} />
       </div>
 
       {/* Main content — scrolls independently, padded for mobile nav + safe area */}

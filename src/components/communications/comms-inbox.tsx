@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { avatarColor, getInitials } from "@/lib/utils";
 import type { CommsFeedItem } from "@/types";
@@ -43,6 +43,13 @@ export function CommsInbox({ items, total }: CommsInboxProps) {
   const router = useRouter();
   const [filter, setFilter] = useState<FilterType>("all");
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    fetch("/api/communications/mark-read", { method: "PUT" }).then(() => {
+      router.refresh();
+    });
+  }, []);
+
 
   const conversations = useMemo<Conversation[]>(() => {
     const byCase = new Map<string, Conversation>();

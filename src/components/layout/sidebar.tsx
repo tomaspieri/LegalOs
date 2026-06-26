@@ -20,6 +20,7 @@ interface RecentCase {
 interface SidebarProps {
   user: SidebarUser;
   recentCases?: RecentCase[];
+  unreadCount?: number;
 }
 
 const ACTIVE_BG = "rgba(93,158,248,0.1)";
@@ -28,7 +29,7 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export function Sidebar({ user, recentCases = [] }: SidebarProps) {
+export function Sidebar({ user, recentCases = [], unreadCount = 0 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -86,9 +87,11 @@ export function Sidebar({ user, recentCases = [] }: SidebarProps) {
           {commsActive && <ActiveBar />}
           <ChatIcon active={commsActive} />
           <span style={navLabelStyle(commsActive)}>Communications</span>
-          <div style={{ background: "#DC2626", borderRadius: 8, padding: "1px 6px", display: "flex", alignItems: "center" }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "white", lineHeight: "16px" }}>3</span>
-          </div>
+          {unreadCount > 0 && (
+            <div style={{ background: "#DC2626", borderRadius: 8, padding: "1px 6px", display: "flex", alignItems: "center" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "white", lineHeight: "16px" }}>{unreadCount}</span>
+            </div>
+          )}
         </Link>
       </nav>
 
