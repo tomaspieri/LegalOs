@@ -2,8 +2,7 @@
 
 import { useState, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { cn, formatDateTime } from "@/lib/utils";
-import { Avatar } from "@/components/ui/avatar";
+import { formatDateTime, getInitials } from "@/lib/utils";
 import type { TimelineEventWithAuthor } from "@/types";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 
@@ -86,24 +85,44 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
   }
 
   return (
-    <div>
+    <div style={{ background: "#FFFDF0", border: "1px solid #EDD770", borderRadius: 10, padding: "18px 22px" }}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
+        <h2
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: "#856404",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+          }}
+        >
           Internal Notes
         </h2>
         <button
           type="button"
           onClick={openAdd}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors cursor-pointer"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            background: "#1D4ED8",
+            color: "white",
+            borderRadius: 6,
+            padding: "5px 12px",
+            fontSize: 12,
+            fontWeight: 500,
+            cursor: "pointer",
+            border: "none",
+          }}
         >
-          <Plus size={13} />
+          <Plus size={11} />
           Add note
         </button>
       </div>
 
       {/* Add note form */}
       {addingNew && (
-        <div className="mb-4 border border-[var(--color-border)] rounded-[var(--radius-md)] p-3 bg-[var(--color-surface)] shadow-[var(--shadow-sm)]">
+        <div className="mb-3 p-3" style={{ background: "white", border: "1px solid #EDD770", borderRadius: 7 }}>
           <textarea
             ref={textareaRef}
             value={newContent}
@@ -140,22 +159,24 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
 
       {/* Notes list */}
       {notes.length === 0 && !addingNew ? (
-        <div className="text-center py-8 border border-dashed border-[var(--color-border)] rounded-[var(--radius-md)]">
-          <p className="text-sm text-[var(--color-text-muted)]">No internal notes yet.</p>
+        <div className="text-center py-6" style={{ border: "1px dashed #EDD770", borderRadius: 7 }}>
+          <p className="text-sm" style={{ color: "#9AAAB8" }}>No internal notes yet.</p>
           <button
             type="button"
             onClick={openAdd}
-            className="mt-2 text-xs text-[var(--color-accent)] hover:underline cursor-pointer"
+            className="mt-2 text-xs hover:underline cursor-pointer"
+            style={{ color: "#1D4ED8" }}
           >
             Add the first note
           </button>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col" style={{ gap: 10 }}>
           {notes.map((note) => (
             <div
               key={note.id}
-              className="border border-[var(--color-border)] rounded-[var(--radius-md)] p-3 bg-[var(--color-surface)] shadow-[var(--shadow-sm)]"
+              className="p-3"
+              style={{ background: "white", border: "1px solid #EDD770", borderRadius: 7, padding: "13px 15px" }}
             >
               {editingId === note.id ? (
                 <>
@@ -213,25 +234,39 @@ export function InternalNotes({ caseId, notes: initialNotes }: InternalNotesProp
                 </div>
               ) : (
                 <>
-                  <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap">
+                  <p
+                    className="whitespace-pre-wrap"
+                    style={{ fontSize: 13, color: "#0C1628", lineHeight: 1.6, marginBottom: 10 }}
+                  >
                     {note.content}
                   </p>
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center" style={{ gap: 6 }}>
                       {note.author && (
                         <>
-                          <Avatar
-                            name={note.author.name}
-                            src={note.author.avatarUrl}
-                            size="sm"
-                          />
-                          <span className="text-xs text-[var(--color-text-muted)]">
+                          <span
+                            style={{
+                              width: 18,
+                              height: 18,
+                              borderRadius: "50%",
+                              background: "#1D4ED8",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: 7,
+                              fontWeight: 700,
+                              color: "white",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {getInitials(note.author.name)}
+                          </span>
+                          <span style={{ fontSize: 12, color: "#5A6A80" }}>
                             {note.author.name}
                           </span>
-                          <span className="text-[var(--color-border-strong)] text-xs">·</span>
                         </>
                       )}
-                      <time className="text-xs text-[var(--color-text-muted)]">
+                      <time style={{ fontSize: 11, color: "#9AAAB8" }}>
                         {formatDateTime(note.occurredAt)}
                       </time>
                     </div>

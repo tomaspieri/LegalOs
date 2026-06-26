@@ -1,25 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { cn, formatDateTime, formatDuration } from "@/lib/utils";
-import { Avatar } from "@/components/ui/avatar";
-import type { UnifiedTimelineItem, TimelineEventWithAuthor, CallRecord, MessageRecord } from "@/types";
-import {
-  StickyNote,
-  Phone,
-  MessageSquare,
-  Mail,
-  Bot,
-  ArrowRight,
-  PhoneIncoming,
-  PhoneOutgoing,
-  PhoneMissed,
-  Voicemail,
-  ChevronDown,
-  ChevronUp,
-  Play,
-  Sparkles,
-} from "lucide-react";
+import { getInitials } from "@/lib/utils";
+import type {
+  UnifiedTimelineItem,
+  TimelineEventWithAuthor,
+  CallRecord,
+  MessageRecord,
+} from "@/types";
 
 type TabId = "all" | "calls" | "sms" | "notes" | "email";
 
@@ -35,257 +23,409 @@ interface TimelineClientProps {
   items: UnifiedTimelineItem[];
 }
 
+function dayKey(d: Date) {
+  return new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
+function timeLabel(d: Date) {
+  return new Date(d).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
+function durationLabel(seconds: number | null | undefined) {
+  if (!seconds) return "";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")} min`;
+}
+
 export function TimelineClient({ items }: TimelineClientProps) {
   const [activeTab, setActiveTab] = useState<TabId>("all");
 
   const filtered = items.filter((item) => {
     if (activeTab === "all") return true;
-    if (activeTab === "calls") return item.kind === "call" || (item.kind === "event" && (item.data.type === "call" || item.data.type === "call_summary"));
-    if (activeTab === "sms") return item.kind === "sms" || (item.kind === "event" && item.data.type === "sms");
+    if (activeTab === "calls")
+      return (
+        item.kind === "call" ||
+        (item.kind === "event" && (item.data.type === "call" || item.data.type === "call_summary"))
+      );
+    if (activeTab === "sms")
+      return item.kind === "sms" || (item.kind === "event" && item.data.type === "sms");
     if (activeTab === "notes") return item.kind === "event" && item.data.type === "note";
     if (activeTab === "email") return item.kind === "event" && item.data.type === "email";
     return true;
   });
 
+  // Group by day (items already sorted newest first)
+  const groups: { day: string; items: UnifiedTimelineItem[] }[] = [];
+  for (const item of filtered) {
+    const day = dayKey(item.occurredAt);
+    const last = groups[groups.length - 1];
+    if (last && last.day === day) last.items.push(item);
+    else groups.push({ day, items: [item] });
+  }
+
   return (
     <div>
-      {/* Tabs */}
-      <div className="flex items-center gap-1 mb-5 border-b border-[var(--color-border)]">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "px-3 py-2 text-xs font-medium transition-colors -mb-px border-b-2 cursor-pointer",
-              activeTab === tab.id
-                ? "border-[var(--color-accent)] text-[var(--color-accent)]"
-                : "border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Tabs header */}
+      <div style={{ display: "flex", alignItems: "center", padding: "0 22px", borderBottom: "1px solid #E4EAF4" }}>
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: "#9AAAB8",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            padding: "14px 0",
+            marginRight: 20,
+            flexShrink: 0,
+          }}
+        >
+          Activity
+        </span>
+        {TABS.map((tab) => {
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                padding: "14px 0",
+                marginRight: 16,
+                cursor: "pointer",
+                fontSize: 13,
+                background: "none",
+                border: "none",
+                borderBottom: `2px solid ${active ? "#1D4ED8" : "transparent"}`,
+                color: active ? "#1D4ED8" : "#7A8FA8",
+                fontWeight: active ? 600 : 400,
+              }}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="text-center py-10 text-[var(--color-text-muted)] text-sm">
-          No {activeTab === "all" ? "activity" : activeTab} yet.
+      <div style={{ padding: "4px 22px 20px" }}>
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 0", color: "#9AAAB8", fontSize: 13 }}>
+            No {activeTab === "all" ? "activity" : activeTab} yet.
+          </div>
+        ) : (
+          groups.map((group) => (
+            <div key={group.day}>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: "#9AAAB8",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.07em",
+                  padding: "14px 0 10px",
+                }}
+              >
+                {group.day}
+              </div>
+              {group.items.map((item) => {
+                if (item.kind === "call") return <CallItem key={item.data.id} call={item.data} />;
+                if (item.kind === "sms") return <SmsItem key={item.data.id} msg={item.data} />;
+                return <EventItem key={item.data.id} event={item.data} />;
+              })}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Call item ──────────────────────────────────────────────────────────────
+
+function CallItem({ call }: { call: CallRecord }) {
+  const [expanded, setExpanded] = useState(false);
+  const isMissed = call.status === "missed" || call.status === "voicemail" || call.status === "busy";
+  const isInbound = call.direction === "inbound";
+
+  if (isMissed) {
+    return (
+      <div
+        style={{
+          background: "#FFF5F5",
+          border: "1px solid #FCA5A5",
+          borderRadius: 8,
+          padding: 14,
+          marginBottom: 10,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <PhoneIconBox bg="#FEE2E2" stroke="#DC2626" />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#0C1628" }}>Missed Call</span>
+            <Badge bg="#FEE2E2" color="#B91C1C">MISSED</Badge>
+          </div>
+          <span style={{ fontSize: 11, color: "#9AAAB8" }}>{timeLabel(call.startedAt)}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isInbound) {
+    return (
+      <div
+        style={{
+          background: "#EEF3FF",
+          border: "1px solid #C7D9FF",
+          borderRadius: 8,
+          padding: 14,
+          marginBottom: 10,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <PhoneIconBox bg="#1D4ED8" stroke="white" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: "#0C1628" }}>Inbound Call</span>
+                <Badge bg="#C7D9FF" color="#1D4ED8">INBOUND</Badge>
+                {call.durationSeconds ? (
+                  <span style={{ fontSize: 12, color: "#5A6A80" }}>{durationLabel(call.durationSeconds)}</span>
+                ) : null}
+              </div>
+              <span style={{ fontSize: 11, color: "#9AAAB8" }}>{timeLabel(call.startedAt)}</span>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              {call.summary && (
+                <div
+                  onClick={() => setExpanded((v) => !v)}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 5, cursor: "pointer", padding: "2px 0" }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      color: "#856404",
+                      background: "#FEF3C7",
+                      border: "1px solid #EDD770",
+                      padding: "1px 5px",
+                      borderRadius: 3,
+                    }}
+                  >
+                    AI
+                  </span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: "#92400E" }}>Summary</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2.5">
+                    <path d={expanded ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
+                  </svg>
+                </div>
+              )}
+              {call.recordingUrl && (
+                <>
+                  {call.summary && <div style={{ width: 1, height: 12, background: "#C7D9FF" }} />}
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#5A6A80" strokeWidth="2">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    <span style={{ fontSize: 12, color: "#5A6A80" }}>Play recording</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {expanded && call.summary && (
+              <div
+                style={{
+                  background: "#FFFDF0",
+                  border: "1px solid #EDD770",
+                  borderRadius: 7,
+                  padding: "12px 14px",
+                  marginTop: 8,
+                }}
+              >
+                <p style={{ fontSize: 12, color: "#5C3B00", lineHeight: 1.5 }}>{call.summary.summaryText}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Outbound
+  return (
+    <div
+      style={{
+        background: "white",
+        border: "1px solid #DDE4EF",
+        borderRadius: 8,
+        padding: 14,
+        marginBottom: 10,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+      }}
+    >
+      <PhoneIconBox bg="#F2F5FA" stroke="#7A8FA8" />
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#0C1628" }}>Outbound Call</span>
+          <Badge bg="#F2F5FA" color="#5A6A80">OUTBOUND</Badge>
+          {call.durationSeconds ? (
+            <span style={{ fontSize: 12, color: "#7A8FA8" }}>{durationLabel(call.durationSeconds)}</span>
+          ) : null}
+        </div>
+        <span style={{ fontSize: 11, color: "#9AAAB8" }}>{timeLabel(call.startedAt)}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── SMS item ───────────────────────────────────────────────────────────────
+
+function SmsItem({ msg }: { msg: MessageRecord }) {
+  const isInbound = msg.direction === "inbound";
+
+  return (
+    <div style={{ marginBottom: 10 }}>
+      {isInbound ? (
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+          <div style={{ maxWidth: 420 }}>
+            <div
+              style={{
+                background: "#F2F5FA",
+                borderRadius: "11px 11px 11px 3px",
+                padding: "9px 13px",
+                fontSize: 13,
+                color: "#0C1628",
+                lineHeight: 1.45,
+              }}
+            >
+              {msg.body}
+            </div>
+            <div style={{ fontSize: 10, color: "#9AAAB8", marginTop: 3, paddingLeft: 3 }}>{timeLabel(msg.sentAt)}</div>
+          </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
-          {filtered.map((item) => {
-            if (item.kind === "event") return <EventItem key={item.data.id} event={item.data} />;
-            if (item.kind === "call") return <CallItem key={item.data.id} call={item.data} />;
-            if (item.kind === "sms") return <SmsItem key={item.data.id} msg={item.data} />;
-            return null;
-          })}
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 8, flexDirection: "row-reverse" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", maxWidth: 420 }}>
+            <div
+              style={{
+                background: "#EEF3FF",
+                borderRadius: "11px 11px 3px 11px",
+                padding: "9px 13px",
+                fontSize: 13,
+                color: "#1A3A7A",
+                lineHeight: 1.45,
+              }}
+            >
+              {msg.body}
+            </div>
+            <div style={{ fontSize: 10, color: "#9AAAB8", marginTop: 3, paddingRight: 3 }}>{timeLabel(msg.sentAt)}</div>
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-// ─── Event item (from timeline_events) ──────────────────────────────────────
+// ─── Generic event (note / email / status) ──────────────────────────────────
 
 function EventItem({ event }: { event: TimelineEventWithAuthor }) {
   const meta = event.metadata as Record<string, any> | null;
-
-  const config = {
-    note: { icon: StickyNote, label: "Staff Note", accent: "bg-slate-100 text-slate-500", card: "border-[var(--color-border)]" },
-    call: { icon: Phone, label: "Call", accent: "bg-blue-50 text-blue-600", card: "border-blue-100" },
-    sms: { icon: MessageSquare, label: "SMS", accent: "bg-green-50 text-green-600", card: "border-green-100" },
-    email: { icon: Mail, label: "Email", accent: "bg-violet-50 text-violet-600", card: "border-violet-100" },
-    call_summary: { icon: Sparkles, label: "AI Summary", accent: "bg-amber-50 text-amber-600", card: "border-amber-100" },
-    status_change: { icon: ArrowRight, label: "Status", accent: "bg-slate-50 text-slate-400", card: "border-[var(--color-border)]" },
-  }[event.type] ?? { icon: StickyNote, label: event.type, accent: "bg-slate-100 text-slate-500", card: "border-[var(--color-border)]" };
-
-  const Icon = config.icon;
-
-  return (
-    <div className="flex gap-3 group">
-      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5", config.accent)}>
-        <Icon size={14} />
-      </div>
-      <div className={cn("flex-1 bg-[var(--color-surface)] border rounded-[var(--radius-md)] p-4 shadow-[var(--shadow-sm)]", config.card)}>
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold text-[var(--color-text-primary)]">{config.label}</span>
-            {event.type === "call" && meta && (
-              <>
-                <span className="text-xs text-[var(--color-text-muted)]">
-                  {meta.direction === "inbound" ? "Inbound" : "Outbound"}
-                </span>
-                {meta.duration_seconds && (
-                  <span className="text-xs text-[var(--color-text-muted)]">
-                    {formatDuration(meta.duration_seconds)}
-                  </span>
-                )}
-              </>
-            )}
-            {event.type === "sms" && meta && (
-              <span className="text-xs text-[var(--color-text-muted)]">
-                {meta.direction === "inbound" ? "Received" : "Sent"}
-              </span>
-            )}
-            {event.type === "status_change" && meta && (
-              <span className="text-xs text-[var(--color-text-muted)]">Stage updated</span>
-            )}
-            {event.author && (
-              <div className="flex items-center gap-1">
-                <Avatar name={event.author.name} src={event.author.avatarUrl} size="sm" />
-                <span className="text-xs text-[var(--color-text-muted)]">{event.author.name}</span>
-              </div>
-            )}
-          </div>
-          <time className="text-xs text-[var(--color-text-muted)] flex-shrink-0">
-            {formatDateTime(event.occurredAt)}
-          </time>
-        </div>
-
-        {event.content && event.type !== "status_change" && (
-          <p className={cn(
-            "text-sm leading-relaxed",
-            event.type === "call_summary"
-              ? "text-[var(--color-text-secondary)] bg-amber-50 rounded-[var(--radius-sm)] p-3 italic"
-              : "text-[var(--color-text-secondary)]"
-          )}>
-            {event.content}
-          </p>
-        )}
-
-        {event.type === "status_change" && meta && (
-          <p className="text-sm text-[var(--color-text-muted)]">
-            Moved to{" "}
-            <span className="font-medium text-[var(--color-text-secondary)]">
-              {meta.to_stage?.replace(/_/g, " ")}
-            </span>
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Call item (from calls table) ───────────────────────────────────────────
-
-function CallItem({ call }: { call: CallRecord }) {
-  const [expanded, setExpanded] = useState(false);
-
-  const DirectionIcon =
-    call.direction === "inbound"
-      ? PhoneIncoming
-      : PhoneOutgoing;
-
-  const isUnanswered = call.status === "missed" || call.status === "voicemail" || call.status === "busy";
-
-  const statusLabel: Record<string, string> = {
-    completed: "",
-    missed: "Missed",
-    voicemail: "Voicemail",
-    busy: "Busy",
+  const labelMap: Record<string, string> = {
+    note: "Note",
+    email: "Email",
+    status_change: "Status",
+    call: "Call",
+    sms: "SMS",
+    call_summary: "AI Summary",
   };
 
   return (
-    <div className="flex gap-3 group">
-      <div className={cn(
-        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
-        isUnanswered ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-600"
-      )}>
-        {isUnanswered ? <PhoneMissed size={14} /> : <DirectionIcon size={14} />}
-      </div>
-
-      <div className={cn(
-        "flex-1 bg-[var(--color-surface)] border rounded-[var(--radius-md)] p-4 shadow-[var(--shadow-sm)]",
-        isUnanswered ? "border-red-100" : "border-blue-100"
-      )}>
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold text-[var(--color-text-primary)]">
-              {isUnanswered ? statusLabel[call.status] || "Call" : call.direction === "inbound" ? "Inbound Call" : "Outbound Call"}
-            </span>
-            {!isUnanswered && call.durationSeconds && (
-              <span className="text-xs text-[var(--color-text-muted)]">
-                {formatDuration(call.durationSeconds)}
+    <div style={{ background: "white", border: "1px solid #DDE4EF", borderRadius: 8, padding: 14, marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#0C1628" }}>
+            {labelMap[event.type] ?? event.type}
+          </span>
+          {event.author && (
+            <>
+              <span
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  background: "#1D4ED8",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 7,
+                  fontWeight: 700,
+                  color: "white",
+                }}
+              >
+                {getInitials(event.author.name)}
               </span>
-            )}
-          </div>
-          <time className="text-xs text-[var(--color-text-muted)] flex-shrink-0">
-            {formatDateTime(call.startedAt)}
-          </time>
-        </div>
-
-        {/* Action row */}
-        <div className="flex items-center gap-3 mt-2">
-          {call.recordingUrl && (
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 text-xs text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors cursor-pointer"
-            >
-              <Play size={12} />
-              Play recording
-            </button>
-          )}
-          {call.summary && (
-            <button
-              type="button"
-              onClick={() => setExpanded((v) => !v)}
-              className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 transition-colors cursor-pointer"
-            >
-              <Sparkles size={12} />
-              AI Summary
-              {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-            </button>
+              <span style={{ fontSize: 12, color: "#5A6A80" }}>{event.author.name}</span>
+            </>
           )}
         </div>
-
-        {/* AI summary (collapsible) */}
-        {expanded && call.summary && (
-          <div className="mt-3 bg-amber-50 border border-amber-100 rounded-[var(--radius-sm)] p-3">
-            <div className="flex items-center gap-1 mb-1.5">
-              <Sparkles size={11} className="text-amber-600" />
-              <span className="text-xs font-medium text-amber-700">AI Summary</span>
-            </div>
-            <p className="text-sm text-amber-900 italic leading-relaxed">
-              {call.summary.summaryText}
-            </p>
-          </div>
-        )}
+        <span style={{ fontSize: 11, color: "#9AAAB8" }}>{timeLabel(event.occurredAt)}</span>
       </div>
+      {event.type === "status_change" && meta ? (
+        <p style={{ fontSize: 13, color: "#5A6A80" }}>
+          Moved to <span style={{ fontWeight: 500 }}>{meta.to_stage?.replace(/_/g, " ")}</span>
+        </p>
+      ) : (
+        event.content && <p style={{ fontSize: 13, color: "#3A5068", lineHeight: 1.6 }}>{event.content}</p>
+      )}
     </div>
   );
 }
 
-// ─── SMS item (from messages table) ─────────────────────────────────────────
+// ─── Shared bits ────────────────────────────────────────────────────────────
 
-function SmsItem({ msg }: { msg: MessageRecord }) {
-  const isInbound = msg.direction === "inbound";
-
+function PhoneIconBox({ bg, stroke }: { bg: string; stroke: string }) {
+  const size = bg === "#1D4ED8" ? 30 : 28;
+  const radius = size === 30 ? 7 : 6;
   return (
-    <div className="flex gap-3 group">
-      <div className="w-8 h-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-        <MessageSquare size={14} />
-      </div>
-
-      <div className="flex-1 bg-[var(--color-surface)] border border-green-100 rounded-[var(--radius-md)] p-4 shadow-[var(--shadow-sm)]">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <span className="text-xs font-semibold text-[var(--color-text-primary)]">
-            SMS — {isInbound ? "Received" : "Sent"}
-          </span>
-          <time className="text-xs text-[var(--color-text-muted)] flex-shrink-0">
-            {formatDateTime(msg.sentAt)}
-          </time>
-        </div>
-        <p className={cn(
-          "text-sm leading-relaxed p-2.5 rounded-[var(--radius-sm)]",
-          isInbound
-            ? "bg-green-50 text-green-900"
-            : "bg-[var(--color-surface-2)] text-[var(--color-text-secondary)]"
-        )}>
-          {msg.body}
-        </p>
-      </div>
+    <div
+      style={{
+        width: size,
+        height: size,
+        background: bg,
+        borderRadius: radius,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round">
+        <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C4.9 21 3 19.1 3 6.5c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z" />
+      </svg>
     </div>
+  );
+}
+
+function Badge({ bg, color, children }: { bg: string; color: string; children: React.ReactNode }) {
+  return (
+    <span
+      style={{
+        background: bg,
+        color,
+        fontSize: 10,
+        fontWeight: 700,
+        padding: "1px 6px",
+        borderRadius: 3,
+      }}
+    >
+      {children}
+    </span>
   );
 }

@@ -32,24 +32,70 @@ export default async function BoardPage() {
   return (
     <div className="flex flex-col min-h-full">
       {/* Page header */}
-      <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-[var(--color-border)] bg-[var(--color-surface)] sticky top-0 z-10">
+      <div
+        className="flex items-center justify-between"
+        style={{
+          padding: "16px 24px 12px",
+          background: "#F2F5FA",
+          borderBottom: "1px solid #E4EAF4",
+          flexShrink: 0,
+        }}
+      >
         <div>
-          <h1 className="text-base sm:text-lg font-semibold text-[var(--color-text-primary)]">
+          <h1 style={{ fontSize: 18, fontWeight: 700, color: "#0C1628", letterSpacing: "-0.4px" }}>
             Pipeline
           </h1>
-          <p className="text-xs sm:text-sm text-[var(--color-text-muted)] mt-0.5">
+          <p style={{ fontSize: 12, color: "#7A8FA8", marginTop: 1 }}>
             {totalCases} active {totalCases === 1 ? "case" : "cases"}
           </p>
         </div>
 
-        {/* Search — desktop only */}
-        <div className="hidden sm:flex items-center gap-2 bg-[var(--color-surface-2)] border border-[var(--color-border)] rounded-[var(--radius-md)] px-3 py-2 w-56">
-          <Search size={14} className="text-[var(--color-text-muted)]" />
-          <input
-            type="text"
-            placeholder="Search cases..."
-            className="bg-transparent text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none flex-1 min-w-0"
-          />
+        {/* Search + New case — desktop only */}
+        <div className="hidden sm:flex items-center" style={{ gap: 9 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 7,
+              background: "white",
+              border: "1px solid #DDE4EF",
+              borderRadius: 7,
+              padding: "7px 11px",
+            }}
+          >
+            <Search size={12} style={{ color: "#9AAAB8" }} />
+            <input
+              type="text"
+              placeholder="Search cases…"
+              style={{
+                background: "transparent",
+                fontSize: 13,
+                color: "#0C1628",
+                outline: "none",
+                border: "none",
+                width: 140,
+              }}
+            />
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#1D4ED8",
+              color: "white",
+              borderRadius: 7,
+              padding: "7px 14px",
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 500,
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            New case
+          </div>
         </div>
       </div>
 
@@ -58,8 +104,10 @@ export default async function BoardPage() {
         className="hidden sm:block flex-1 overflow-x-auto overscroll-x-contain"
         style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
       >
-        <div className="flex gap-3 sm:gap-4 p-4 sm:p-6 items-start"
-             style={{ width: "max-content", minWidth: "100%" }}>
+        <div
+          className="flex items-start"
+          style={{ gap: 14, padding: "16px 24px 24px", width: "max-content", minWidth: "100%" }}
+        >
           {PIPELINE_STAGES.map((stage) => (
             <KanbanColumn
               key={stage.id}

@@ -61,3 +61,47 @@ export function getInitials(name: string): string {
     .map((n) => n[0].toUpperCase())
     .join("");
 }
+
+// ─── Design system helpers ──────────────────────────────────────────────────
+
+const AVATAR_COLORS = [
+  "#1D4ED8",
+  "#059669",
+  "#7C3AED",
+  "#D97706",
+  "#DC2626",
+  "#0891B2",
+  "#BE185D",
+];
+
+export function avatarColor(name: string): string {
+  let hash = 0;
+  for (const c of name) hash = (hash * 31 + c.charCodeAt(0)) & 0xffff;
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
+
+// Pipeline stage dot colors keyed by stage id (see src/types PipelineStage)
+export const STAGE_COLORS: Record<string, string> = {
+  new_lead: "#64748B",
+  case_evaluation: "#2563EB",
+  retainer_sent: "#7C3AED",
+  case_management: "#D97706",
+  litigation: "#DC2626",
+  in_litigation: "#DC2626",
+  dropped: "#9AAAB8",
+};
+
+// Short stage labels used in compact contexts (e.g. sidebar recent cases)
+export const STAGE_SHORT_LABELS: Record<string, string> = {
+  new_lead: "New Lead",
+  case_evaluation: "Evaluation",
+  retainer_sent: "Retainer",
+  case_management: "Mgmt",
+  litigation: "Litigation",
+  in_litigation: "Litigation",
+  dropped: "Dropped",
+};
+
+export function stageColor(stage: string): string {
+  return STAGE_COLORS[stage] ?? "#9AAAB8";
+}

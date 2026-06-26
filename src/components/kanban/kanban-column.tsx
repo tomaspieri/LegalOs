@@ -1,14 +1,6 @@
-import { CaseCard } from "./case-card";
+import { CaseCard, AddCaseRow } from "./case-card";
+import { stageColor } from "@/lib/utils";
 import type { CaseWithAssignee, PipelineStage } from "@/types";
-
-const stageColors: Record<PipelineStage, string> = {
-  new_lead: "bg-slate-400",
-  case_evaluation: "bg-blue-500",
-  retainer_sent: "bg-violet-600",
-  case_management: "bg-amber-500",
-  litigation: "bg-orange-600",
-  dropped: "bg-slate-300",
-};
 
 interface KanbanColumnProps {
   stageId: PipelineStage;
@@ -17,29 +9,81 @@ interface KanbanColumnProps {
 }
 
 export function KanbanColumn({ stageId, label, cases }: KanbanColumnProps) {
+  const dot = stageColor(stageId);
+  const isDropped = stageId === "dropped";
+
   return (
-    <div className="flex flex-col flex-shrink-0" style={{ width: "clamp(260px, 75vw, 300px)" }}>
+    <div style={{ width: 228, flexShrink: 0 }}>
       {/* Column header */}
-      <div className="flex items-center gap-2 mb-3 px-1">
-        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${stageColors[stageId]}`} />
-        <h2 className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider flex-1">
-          {label}
-        </h2>
-        <span className="text-xs text-[var(--color-text-muted)] bg-[var(--color-surface-2)] px-1.5 py-0.5 rounded-full font-medium">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 1px 10px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ width: 7, height: 7, borderRadius: "50%", background: dot }} />
+          <span
+            style={{
+              fontSize: 10.5,
+              fontWeight: 700,
+              color: isDropped ? "#9AAAB8" : "#5A6A80",
+              letterSpacing: "0.07em",
+              textTransform: "uppercase",
+            }}
+          >
+            {label}
+          </span>
+        </div>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#9AAAB8",
+            background: "#E9EEF7",
+            borderRadius: 9,
+            padding: "1px 7px",
+          }}
+        >
           {cases.length}
         </span>
       </div>
 
       {/* Cards */}
-      <div className="flex flex-col gap-2.5 flex-1">
-        {cases.length === 0 ? (
-          <div className="border border-dashed border-[var(--color-border)] rounded-[var(--radius-md)] p-4 text-center">
-            <p className="text-xs text-[var(--color-text-muted)]">No cases</p>
-          </div>
-        ) : (
-          cases.map((c) => <CaseCard key={c.id} caseData={c} />)
-        )}
-      </div>
+      {cases.length === 0 ? (
+        <div
+          style={{
+            border: "1px dashed #DDE4EF",
+            borderRadius: 9,
+            padding: "28px 16px",
+            textAlign: "center",
+            color: "#C0CAD8",
+          }}
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            style={{ margin: "0 auto 8px", display: "block" }}
+          >
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <path d="M14 2v6h6" />
+          </svg>
+          <p style={{ fontSize: 12 }}>No {label.toLowerCase()}</p>
+        </div>
+      ) : (
+        <>
+          {cases.map((c) => (
+            <CaseCard key={c.id} caseData={c} />
+          ))}
+          <AddCaseRow />
+        </>
+      )}
     </div>
   );
 }
